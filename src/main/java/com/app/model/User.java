@@ -1,5 +1,6 @@
 package com.app.model;
 
+
 public class User {
 
     private String firstName;
