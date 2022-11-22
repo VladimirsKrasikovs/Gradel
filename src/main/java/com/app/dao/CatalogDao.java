@@ -48,8 +48,9 @@ public class CatalogDao {
     public List<SubCategory> getSubcategories(long categoryId){
         RowMapper<SubCategory> rowMapper = (rs, rowNumber) -> mapSubcategory(rs);
         return jdbcTemplate.query("SELECT s.id AS s_id , s.name AS s_name , c.id AS c_id,  c.name AS c_name " +
-                "FROM subcategory s WHERE s.category_id = ? " +
-                "INNER JOIN categories c ON s.category_id = c.id", rowMapper, categoryId);
+                "FROM subcategory s " +
+                "INNER JOIN categories c ON s.category_id = c.id " +
+                "WHERE s.category_id = ?", rowMapper, categoryId);
     }
 
     private SubCategory mapSubcategory(ResultSet rs) throws SQLException {
@@ -72,27 +73,50 @@ public class CatalogDao {
 
     public List<CatalogItem> getItems(){
         RowMapper<CatalogItem> rowMapper = (rs, i) -> mapItem(rs);
-        return jdbcTemplate.query("SELECT * FROM catalog", rowMapper);
+        return jdbcTemplate.query("SELECT c.id AS item_id, c.name AS item_name, c.description, c.pricae, " +
+                "s.id AS sub_id, s.name AS sub_name, t.id AS cat_id, t.name AS cat_name " +
+                "FROM catalog c " +
+                "INNER JOIN subcategory s ON c.subcategory_id = s.id " +
+                "INNER JOIN categories t ON s.category_id = t.id ", rowMapper);
+    }
+    public List<CatalogItem> getItemsbyId(long id){
+        RowMapper<CatalogItem> rowMapper = (rs, i) -> mapItem(rs);
+        return jdbcTemplate.query("SELECT c.id AS item_id, c.name AS item_name, c.description, c.pricae, " +
+                "s.id AS sub_id, s.name AS sub_name, t.id AS cat_id, t.name AS cat_name " +
+                "FROM catalog c " +
+                "INNER JOIN subcategory s ON c.subcategory_id = s.id " +
+                "INNER JOIN categories t ON s.category_id = t.id " +
+                "WHERE c.subcategory_id = ? ", rowMapper, id);
     }
 
     private CatalogItem mapItem(ResultSet rs) throws SQLException {
-        CatalogItem item = new CatalogItem();
+        Category category = new Category();
+        category.setId(rs.getLong("cat_id"));
+        category.setName(rs.getString("cat_name"));
 
-        item.setId(rs.getLong("id"));
-        item.setSubcategoryId(rs.getLong("subcategory_id"));
-        item.setName(rs.getString("name"));
+        SubCategory subCategory = new SubCategory();
+        subCategory.setCategory(category);
+        subCategory.setId(rs.getLong("sub_id"));
+        subCategory.setName(rs.getString("sub_name"));
+
+
+        CatalogItem item = new CatalogItem();
+        item.setSubcategory(subCategory);
+        item.setId(rs.getLong("item_id"));
+        item.setName(rs.getString("item_name"));
         item.setDescription(rs.getString("description"));
         item.setPrice(new BigDecimal(rs.getString("pricae")));
-        item.setBrandId(rs.getLong("brand_id"));
-        item.setImage(rs.getString("image"));
+//        item.setBrandId(rs.getLong("brand_id"));
+//        item.setImage(rs.getString("image"));
 
         return item;
 
     }
 
+
     public void storeItem (CatalogItem item){
         jdbcTemplate.update("INSERT INTO catalog (subcategory_id, name, description, pricae) VALUES (?, ?, ?, ?)",
-        item.getSubcategoryId(), item.getName(), item.getDescription(), item.getPrice()) ;
+        item.getSubcategory().getId(), item.getName(), item.getDescription(), item.getPrice()) ;
 
     }
 

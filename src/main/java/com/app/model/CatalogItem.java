@@ -5,7 +5,8 @@ import java.math.BigDecimal;
 public class CatalogItem {
 
     private long id;
-    private long subcategoryId;
+    private SubCategory subcategory;
+   // private long subcategoryId;
     private String name;
     private String description;
     private BigDecimal price;
@@ -20,12 +21,12 @@ public class CatalogItem {
         this.id = id;
     }
 
-    public long getSubcategoryId() {
-        return subcategoryId;
+    public SubCategory getSubcategory() {
+        return subcategory;
     }
 
-    public void setSubcategoryId(long subcategoryId) {
-        this.subcategoryId = subcategoryId;
+    public void setSubcategory(SubCategory subcategory) {
+        this.subcategory = subcategory;
     }
 
     public String getName() {
